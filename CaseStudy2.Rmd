@@ -35,13 +35,22 @@ aic_forward$adj.r.squared
 aic_backward$adj.r.squared
 ```
 
-```{r}
+```{r ugh}
 dataset$Attrition <- as.factor(dataset$Attrition)
 set.seed(1)
-train.control <- trainControl(method = "cv", number = 2)
+train.control <- trainControl(method = "cv", number = 3)
 step.model <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control)
-step.model$results
-#glmStepAIC is the long one
+
+train.control1 <- trainControl(method = "LOOCV", number = 3)
+step.model1 <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control1)
+
+train.control2 <- trainControl(method = "none", number = 3)
+step.model2 <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control2)
+
+#step.model$results
+#step.model1$results
+#step.model2$results
+#method cv, LOOCV, none
 ```
 
 
