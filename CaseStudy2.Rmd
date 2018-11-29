@@ -5,15 +5,43 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+library(caret)
+library(leaps)
+library(MASS)
 ```
 
 ```{r import, message=FALSE}
-library(readr)
-dataset <- read_csv("CaseStudy2-data.csv")
+dataset <- read_csv("CaseStudy2-data.csv",
+                    col_types = cols(EmployeeCount = col_skip(), ID = col_skip(), Over18 = col_skip(), Rand = col_skip(), StandardHours = col_skip()))
+```
+
+```{r set to binary}
+dataset$Attrition[dataset$Attrition=="Yes"] <- 1
+dataset$Attrition[dataset$Attrition=="No"] <- 0
+```
+
+```{r AIC model}
+model_aic <- lm(Attrition ~ ., data = dataset)
+step.model_both <- stepAIC(model_aic, direction = "both", trace = FALSE)
+step.model_forward <- stepAIC(model_aic, direction = "forward", trace = FALSE)
+step.model_backward <- stepAIC(model_aic, direction = "backward", trace = FALSE)
+aic_both <- summary(step.model_both)
+aic_forward <- summary(step.model_forward)
+aic_backward <- summary(step.model_backward)
+aic_both$adj.r.squared
+aic_forward$adj.r.squared
+aic_backward$adj.r.squared
 ```
 
 ```{r}
-
+dataset$Attrition <- as.factor(dataset$Attrition)
+set.seed(1)
+train.control <- trainControl(method = "cv", number = 2)
+step.model <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control)
+step.model$results
+#glmStepAIC is the long one
 ```
 
 
