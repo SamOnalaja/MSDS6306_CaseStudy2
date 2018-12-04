@@ -10,6 +10,8 @@ library(tidyverse)
 library(caret)
 library(leaps)
 library(MASS)
+library(DAAG)
+library(bestglm)
 ```
 
 ```{r import, message=FALSE}
@@ -17,12 +19,19 @@ dataset <- read_csv("CaseStudy2-data.csv",
                     col_types = cols(EmployeeCount = col_skip(), ID = col_skip(), Over18 = col_skip(), Rand = col_skip(), StandardHours = col_skip()))
 ```
 
-```{r set to binary}
+```{r set to binary and change to integer}
+#maybe do this
 dataset$Attrition[dataset$Attrition=="Yes"] <- 1
 dataset$Attrition[dataset$Attrition=="No"] <- 0
+dataset$Attrition <- as.integer(dataset$Attrition)
+```
+
+```{r convert character columns to factors}
+dataset[sapply(dataset, is.character)] <- lapply(dataset[sapply(dataset, is.character)], as.factor)
 ```
 
 ```{r AIC model}
+#this did pretty bad, R2 values of 0.25
 model_aic <- lm(Attrition ~ ., data = dataset)
 step.model_both <- stepAIC(model_aic, direction = "both", trace = FALSE)
 step.model_forward <- stepAIC(model_aic, direction = "forward", trace = FALSE)
@@ -36,21 +45,11 @@ aic_backward$adj.r.squared
 ```
 
 ```{r ugh}
-dataset$Attrition <- as.factor(dataset$Attrition)
-set.seed(1)
-train.control <- trainControl(method = "cv", number = 3)
-step.model <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control)
-
-train.control1 <- trainControl(method = "LOOCV", number = 3)
-step.model1 <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control1)
-
-train.control2 <- trainControl(method = "none", number = 3)
-step.model2 <- caret::train(Attrition ~ ., data = dataset, method = "glmStepAIC", trControl = train.control2)
-
-#step.model$results
-#step.model1$results
-#step.model2$results
-#method cv, LOOCV, none
+summary(model_aic)
+step.model_both$anova
 ```
 
+```{r ugh2}
+pleaseWork <- bestglm(dataset, IC="AIC")
+```
 
