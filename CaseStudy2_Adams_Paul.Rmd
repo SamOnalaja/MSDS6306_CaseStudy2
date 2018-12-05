@@ -11,7 +11,7 @@ library(caret)
 
 ## Pulling in the data
 ```{r importData, message=FALSE}
-#Pulling in data, these will remain untouched to satisfy Professors new rules
+#Import data
 dfTrain <- read.csv("CaseStudy2-data.csv")
 dfVal <- read.csv("CaseStudy2Validation.csv")
 ```
@@ -19,7 +19,7 @@ dfVal <- read.csv("CaseStudy2Validation.csv")
 ## Getting data ready for analysis
 ```{r arrangingData}
 #Dropping the following columns so we don't have to copy and paste the code dropping the columns in the analysis every time
-# ID & Rand: Are arbitrary (should probably also drop EmployeeNumber? We will just see what stepwise does with it)
+# ID & Rand: Are arbitrary
 # Over18, StandardHours, and EmployeeCount: Only have one level
 dfTrainModified <- dfTrain %>%
   select(-c(Over18, ID, StandardHours, EmployeeCount, Rand)) %>%
@@ -82,7 +82,7 @@ attrition.predicted[attrition.probability > .5] = "Yes"
 confusionMatrix(table(attrition.predicted,training$Attrition))
 ```
 
-## Using model to create the test set we are to return (this returns a very high accuracy, but I think that's because it is using the test data to predict the test data as opposed to using training data to predict testing, but i think that's the point?)
+## Using model to create the test set we are to return
 ```{r testOnDfVal}
 attritionValidate.probability = predict(glm(formula(stepwiseGlmAnalysis), data=dfValModified, family=binomial), dfValModified, type="response")
 
@@ -100,15 +100,15 @@ confusionMatrix(table(attritionValidate.predicted,dfValModified$Attrition))
 ```{r finalPredictionDeliverable}
 # Creating the new dataframe that will be written
 # Keeping Attrition in there to do one last test
-dfPred = data.frame(dfVal[,c("ID", "Attrition")], attritionValidate.predicted)
-names(dfPred) <- c("ID", "AttritionActual","AttritionPredicted")
+dfPreds = data.frame(dfVal[,c("ID", "Attrition")], attritionValidate.predicted)
+names(dfPreds) <- c("ID", "AttritionActual","AttritionPredicted")
 
 # Making AttritionActual a factor column for the comparison
-dfPred$AttritionActual <- factor(dfPred$AttritionActual)
+dfPreds$AttritionActual <- factor(dfPreds$AttritionActual)
 
 #How did we do?
-confusionMatrix(table(dfPred$AttritionPredicted, dfPred$AttritionActual))
+confusionMatrix(table(dfPreds$AttritionPredicted, dfPreds$AttritionActual))
 
 # Write the final deliverable
-write.csv(dfPred[,c("ID", "AttritionPredicted")], "Case2PredictionsPaul.csv", row.names = FALSE)
+write.csv(dfPreds[,c("ID", "AttritionPredicted")], "Case2PredictionsAdams_Paul.csv", row.names = FALSE)
 ```
