@@ -112,3 +112,6 @@ confusionMatrix(table(dfPreds$AttritionPredicted, dfPreds$AttritionActual))
 # Write the final deliverable
 write.csv(dfPreds[,c("ID", "AttritionPredicted")], "Case2PredictionsAdams_Paul.csv", row.names = FALSE)
 ```
+
+<!-- GitHub Repo -->
+https://github.com/eta2sec/MSDS6306_CaseStudy2
