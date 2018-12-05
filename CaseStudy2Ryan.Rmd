@@ -1,0 +1,114 @@
+---
+title: "CaseStudy2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(caret)
+```
+
+## Pulling in the data
+```{r importData, message=FALSE}
+#Pulling in data, these will remain untouched to satisfy Professors new rules
+dfTrain <- read.csv("CaseStudy2-data.csv")
+dfVal <- read.csv("CaseStudy2Validation.csv")
+```
+
+## Getting data ready for analysis
+```{r arrangingData}
+#Dropping the following columns so we don't have to copy and paste the code dropping the columns in the analysis every time
+# ID & Rand: Are arbitrary (should probably also drop EmployeeNumber? We will just see what stepwise does with it)
+# Over18, StandardHours, and EmployeeCount: Only have one level
+dfTrainModified <- dfTrain %>%
+  select(-c(Over18, ID, StandardHours, EmployeeCount, Rand)) %>%
+  na.omit() %>%
+  as.data.frame()
+
+dfValModified <- dfVal %>%
+  select(-c(Over18, ID, StandardHours, EmployeeCount, Rand)) %>%
+  na.omit() %>%
+  as.data.frame()
+
+# Force Attrition to be a factor column for the binomial analysis
+dfTrainModified$Attrition <- factor(dfTrainModified$Attrition)
+dfValModified$Attrition <- factor(dfValModified$Attrition)
+
+# View the integers used
+contrasts(dfTrainModified$Attrition)
+
+# Pretending we don't have the answers in the test set
+# Splitting into training and test sets
+inTraining <- createDataPartition(y = dfTrainModified$Attrition, p = .60, list = FALSE)
+training <- dfTrainModified[inTraining,]
+testing <- dfTrainModified[-inTraining,]
+
+# Spot checking sizes
+dim(training)
+dim(testing)
+```
+
+## Stepwise analysis
+```{r stepwiseAnalysis}
+# Creating a model with all columns, binomial means it's a logistic regression, or regression with only two outcomes
+# In our case employees either quit or they didn't
+attritionModel.fit = glm(Attrition ~ ., data=training, family=binomial)
+
+# Using Stepwise model selection to determine parameters to include in the overall formula
+stepwiseGlmAnalysis <- step(attritionModel.fit, direction="both")
+
+# Summary 
+summary(stepwiseGlmAnalysis)
+```
+
+## Formula we will use
+```{r returnedFormula}
+formula(stepwiseGlmAnalysis)
+```
+
+## Testing formula against training set
+```{r selfTesting}
+# Use the model found with stepwise selection to give predictions
+attrition.probability = predict(glm(formula(stepwiseGlmAnalysis), data=training, family=binomial), testing, type="response")
+
+# Make a vector of "No"
+attrition.predicted = rep("No", dim(training)[1])
+
+# Convert predicted values of greater than .5 to "Yes"
+attrition.predicted[attrition.probability > .5] = "Yes"
+
+# How did we do?
+confusionMatrix(table(attrition.predicted,training$Attrition))
+```
+
+## Using model to create the test set we are to return (this returns a very high accuracy, but I think that's because it is using the test data to predict the test data as opposed to using training data to predict testing, but i think that's the point?)
+```{r testOnDfVal}
+attritionValidate.probability = predict(glm(formula(stepwiseGlmAnalysis), data=dfValModified, family=binomial), dfValModified, type="response")
+
+# Make a vector of "No"
+attritionValidate.predicted = rep("No", dim(dfValModified)[1])
+
+# Convert predicted values of greater than .5 to "Yes"
+attritionValidate.predicted[attritionValidate.probability > .5] = "Yes"
+
+# How did we do?
+confusionMatrix(table(attritionValidate.predicted,dfValModified$Attrition))
+```
+
+## Create CSV Deliverable
+```{r finalPredictionDeliverable}
+# Creating the new dataframe that will be written
+# Keeping Attrition in there to do one last test
+dfPred = data.frame(dfVal[,c("ID", "Attrition")], attritionValidate.predicted)
+names(dfPred) <- c("ID", "AttritionActual","AttritionPredicted")
+
+# Making AttritionActual a factor column for the comparison
+dfPred$AttritionActual <- factor(dfPred$AttritionActual)
+
+#How did we do?
+confusionMatrix(table(dfPred$AttritionPredicted, dfPred$AttritionActual))
+
+# Write the final deliverable
+write.csv(dfPred[,c("ID", "AttritionPredicted")], "Case2PredictionsPaul.csv", row.names = FALSE)
+```
