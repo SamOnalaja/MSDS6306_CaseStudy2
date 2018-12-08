@@ -8,6 +8,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(caret)
 ```
+## Summary
+We are DDSAnalytics, an analytics company that specializes in talent management solutions for Fortune 1000 companies. We were hired by a large beer conglomerate to analyze employee data to come up with a model to predict employee attrition.
 
 ## Pulling in the data
 ```{r importData, message=FALSE}
