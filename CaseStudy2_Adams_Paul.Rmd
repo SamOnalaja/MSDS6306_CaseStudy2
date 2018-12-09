@@ -1,6 +1,7 @@
 ---
 title: "CaseStudy2"
 output: html_document
+Authors: Evan Adams, Ryan Paul
 ---
 
 ```{r setup, include=FALSE}
@@ -131,3 +132,5 @@ https://github.com/eta2sec/MSDS6306_CaseStudy2
 
 ## Video for Ryan Paul
 https://www.youtube.com/watch?v=QPIQIiiNq8Q
+
+## Video for Evan Adams

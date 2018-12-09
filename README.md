@@ -19,3 +19,4 @@ We are DDSAnalytics an analytics company that specializes in talent management s
 
 ## Presentations
 - Ryan Paul: [https://www.youtube.com/watch?v=QPIQIiiNq8Q](https://www.youtube.com/watch?v=QPIQIiiNq8Q)
+- Evan Adams: 
